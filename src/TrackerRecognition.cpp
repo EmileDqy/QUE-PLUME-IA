@@ -40,7 +40,7 @@ void trackAndRecognize(){
   Ptr<Tracker> tracker = TrackerCSRT::create();
   
   // set input video
-  VideoCapture cam(1);
+  VideoCapture cam(0);
   
   // We need to wait a little for the cam to start.
   cam >> frame; // skip 
