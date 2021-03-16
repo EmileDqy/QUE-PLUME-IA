@@ -158,8 +158,12 @@ void calibrate()
     // But we'll have trouble getting the names right there, so we might as well each region individualy with their corresponding name.
 
     // Here we just write the names because we need to display the camera with the mask on it.
-    for(int i = 0; i < regions_saved.size(); i++)
+    for(int i = 0; i < regions_saved.size(); i++) {
+         mask_local = Mat::ones(pic.size(), CV_8U);
         putText(mask, storage_names[i], Point(regions_saved[i][0].x-15, regions_saved[i][0].y-5), FONT_HERSHEY_PLAIN, 1, Scalar(0, 0, 255));
+        drawContours(mask_local, regions_saved, i, Scalar(0, 0, 255), 5);
+        imwrite("./mask_calibration_" + storage_names[i] + ".png", mask_local * 255);
+    }
 
     // We simply apply the mask on the frame (direct output of our camera).
     Mat final;
