@@ -35,12 +35,12 @@ vector<vector<Point>> regions_saved;
 
 // The different names of our storages.
 string storage_names[] = {
-    "boite noire",
-    "boite blanche",
-    "couvercle noir",
-    "couvercle blanc",
-    "goupille noire",
-    "goupille blanche"
+    "boite_noire",
+    "boite_blanche",
+    "couvercle_noir",
+    "couvercle_blanc",
+    "goupille_noire",
+    "goupille_blanche"
 };
 
 // We use this fonction to strech the sprectrum of our image.
@@ -159,10 +159,10 @@ void calibrate()
 
     // Here we just write the names because we need to display the camera with the mask on it.
     for(int i = 0; i < regions_saved.size(); i++) {
-         mask_local = Mat::ones(pic.size(), CV_8U);
+        Mat mask_local = Mat::ones(pic.size(), CV_8U);
         putText(mask, storage_names[i], Point(regions_saved[i][0].x-15, regions_saved[i][0].y-5), FONT_HERSHEY_PLAIN, 1, Scalar(0, 0, 255));
         drawContours(mask_local, regions_saved, i, Scalar(0, 0, 255), 5);
-        imwrite("./mask_calibration_" + storage_names[i] + ".png", mask_local * 255);
+        imwrite("~/QUE-PLUME-IA/mask_calibration_" + storage_names[i] + ".png", mask_local * 255);
     }
 
     // We simply apply the mask on the frame (direct output of our camera).
