@@ -35,12 +35,12 @@ vector<vector<Point>> regions_saved;
 
 // The different names of our storages.
 string storage_names[] = {
-    "boite noire",
-    "boite blanche",
-    "couvercle noir",
-    "couvercle blanc",
-    "goupille noire",
-    "goupille blanche"
+    "boite_noire",
+    "boite_blanche",
+    "couvercle_noir",
+    "couvercle_blanc",
+    "goupille_noire",
+    "goupille_blanche"
 };
 
 // We use this fonction to strech the sprectrum of our image.
