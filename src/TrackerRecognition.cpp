@@ -78,7 +78,7 @@ void trackAndRecognize(){
 
       if(diff <= 3.0){
         triggered = true;
-        rect = Rect(roi.x-object_w, roi.y, object_w, object_h);
+        rect = Rect(roi.x-(object_w-roi.width)*0.5, roi.y-(object_h-roi.height)*0.5, object_w, object_h);
       }
 
     }
