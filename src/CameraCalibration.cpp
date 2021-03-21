@@ -93,7 +93,7 @@ void onMouse(int event, int x, int y, int flags, void* userdata){
 
 void calibrate()
 {
-    string window_title = "window";
+    string window_title = "Camera";
 
     VideoCapture cam(0); // We initialize our cam and ask for the peripheral number 1 (only MacOS, 0 otherwise)
 
@@ -104,7 +104,7 @@ void calibrate()
             window_title = storage_names[regions_saved.size()]; // We display the name of the next region to be selected.
         else
             break; // When we have selected the number of regions needed, we break the loop. We then display the result with the real image (frame).
-        setWindowTitle("window", window_title);        
+        setWindowTitle("Camera", window_title);        
 
         // Simple image processing
         contrastStretch(frame);
@@ -114,7 +114,7 @@ void calibrate()
         cvtColor(canny, pic, COLOR_GRAY2RGB); // Pic is our final image, the one displayed
         
         // We create the TrackBar, it's needed if we want to calibrate our canny filter and thus have a good detection of our storage regions.
-        createTrackbar( "Min Threshold:", "window", &lowThreshold, 100);
+        createTrackbar( "Min Threshold:", "Camera", &lowThreshold, 100);
         stringstream str;
         string s;
         str << lowThreshold*255/100;
@@ -137,7 +137,7 @@ void calibrate()
             }
         }
         
-        setMouseCallback("window", onMouse);
+        setMouseCallback("Camera", onMouse);
         
         //Draw on our picture
         drawContours(pic, regions_displayed, -1, Scalar(255, 0, 0), 3);
@@ -145,7 +145,7 @@ void calibrate()
         for(int i = 0; i < regions_saved.size(); i++)
             putText(pic, storage_names[i], Point(regions_saved[i][0].x-15, regions_saved[i][0].y-5), FONT_HERSHEY_PLAIN, 1, Scalar(0, 0, 255));
         
-        imshow("window", pic);
+        imshow("Camera", pic);
         if((waitKey(1) & 0xFF) == 'q') break; // From here, we can simply read our masks and get our regions and their names. 
         // Because breaking here leads to the camera.
         //                  |

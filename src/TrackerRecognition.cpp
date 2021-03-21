@@ -48,7 +48,7 @@ void trackAndRecognize(){
   cam >> frame; // take
 
   // Ask for a ROI (something to track)
-  roi=selectROI("tracker",frame);
+  roi=selectROI("Camera",frame);
 
   if(roi.width==0 || roi.height==0)
     return;
@@ -74,7 +74,7 @@ void trackAndRecognize(){
       std::ostringstream strs;
       strs << diff;
       std::string str = strs.str();
-      cout << str + "\n";
+      cout << "Tracker's speed:\t" << str << "\tpx/s" << endl;
 
       if(diff <= 3.0){
         triggered = true;
@@ -94,10 +94,9 @@ void trackAndRecognize(){
       );
       
       resize(extract, extract, Size(224, 224));
-      dnn::Net net = dnn::readNetFromTensorflow("/home/pi/QUE-PLUME-IA/src/frozen_graph.pb");//, "./frozen_graph.pbtxt");
+      dnn::Net net = dnn::readNetFromTensorflow("/Users/emile/Documents/HEI4/AI/QUE-PLUME-IA/src/frozen_graph.pb");//, "./frozen_graph.pbtxt");
       net.setInput(dnn::blobFromImage(extract, (1.0), Size(224, 224)));
       Mat output = net.forward();
-      
       vector<float> v;
       output.row(0).copyTo(v);
       int maxElementIndex = std::max_element(v.begin(),v.end()) - v.begin();
@@ -105,12 +104,15 @@ void trackAndRecognize(){
       cout << "Vecteur estimé: " << output << endl;
       cout << "Estimation: " << classes[maxElementIndex] << endl;
       cout << flush;
+      
+      vector<int> color = getColor(extract);
+      cout << "Object Color RGB(" << color[0] << "," << color[1] << "," << color[2] << ");" << endl;
+      
     }
     
     rectangle(frame, rect, Scalar(255, 0, 0), 1);
     
-    imshow("tracker",frame);
-
-    if(waitKey(1)==27)break; // ESC
+    imshow("Camera",frame);
+    if((waitKey(1) & 0xFF) == 'q') break;
   }
 }
