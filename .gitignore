@@ -426,3 +426,12 @@ CPackSourceConfig.cmake
 CTestTestfile.cmake
 DartConfiguration.tcl
 Makefile
+build/.cmake/api/v1/reply/codemodel-v2-d33e10e3add0d3988a9e.json
+build/.cmake/api/v1/reply/index-2021-03-21T20-37-36-0668.json
+build/.cmake/api/v1/reply/target-ProjetIA-Debug-074926a5cad3c8971e2b.json
+build/CMakeFiles/Continuous.dir/depend.internal
+build/CMakeFiles/Continuous.dir/depend.make
+build/CMakeFiles/ProjetIA.dir/src/ColorExtractor.cpp.o
+build/Testing/TAG
+build/Testing/20210316-1300/Update.xml
+build/Testing/Temporary/LastUpdate_20210316-1300.log
