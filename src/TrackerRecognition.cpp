@@ -87,6 +87,15 @@ void trackAndRecognize(){
     
     if(triggered && !one_take){
       one_take = true;
+      Range r1 = Range( old_y, old_y+object_h );
+      if(r1.start <= 0) r1.start = 1;
+      if(r1.end > frame.rows) r1.end = frame.rows;
+      Range r2 = Range( old_x-object_w, old_x );
+      if(r2.start <= 0) r2.start = 1;
+      if(r2.end > frame.cols) r2.end = frame.cols;
+      
+      cout << r1 << " " << r2 << endl;
+
       cv::Mat extract(
         frame,                              // Frame to copy
         cv::Range( old_y, old_y+object_h ), // Range along Y axis
