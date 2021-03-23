@@ -164,6 +164,8 @@ void calibrate()
         drawContours(mask_local, regions_saved, i, Scalar(0, 0, 255), 5);
         imwrite("~/QUE-PLUME-IA/mask_calibration_" + storage_names[i] + ".png", mask_local * 255);
     }
+    
+    std::vector<std::vector<cv::Point>> vector_regions = regions_saved;
 
     // We simply apply the mask on the frame (direct output of our camera).
     Mat final;

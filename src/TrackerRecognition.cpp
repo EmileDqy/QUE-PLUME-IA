@@ -36,9 +36,11 @@ void trackAndRecognize(){
   Rect roi;
   Mat frame;
 
+  cout << vector_regions.size() << endl;
+
   // create a tracker object
   Ptr<Tracker> tracker = TrackerCSRT::create();
-  
+
   // set input video
   VideoCapture cam(0);
   

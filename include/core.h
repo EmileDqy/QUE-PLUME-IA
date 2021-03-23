@@ -7,6 +7,8 @@
 void calibrate();
 void trackAndRecognize();
 std::vector<int> getColor(cv::Mat frame1);
+namespace { std::vector<std::vector<cv::Point>> vector_regions; }
+extern std::vector<std::vector<cv::Point>> vector_regions;
 
-#endif // HEADER_FILE_H
+#endif // HEADER_FILE_H 
 
