@@ -19,6 +19,15 @@ int old_y;
 int64 old_timer;
 double diff;
 
+string storage_names_tracker[] = {
+    "boite_noire",
+    "boite_blanche",
+    "couvercle_noir",
+    "couvercle_blanc",
+    "goupille_noire",
+    "goupille_blanche"
+};
+
 int object_w = 150;
 int object_h = object_w;
 
@@ -55,6 +64,12 @@ void trackAndRecognize(){
 
   tracker->init(frame,roi);
   old_timer = getTickCount();
+  
+  Mat images[6];
+  for(int i = 0; i<6; i++)
+  {
+    images[i] = imread("./mask_calibration_" + storage_names_tracker[i] + ".png", IMREAD_GRAYSCALE);
+  }
 
   for ( ;; ){
     cam >> frame;
