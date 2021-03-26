@@ -19,15 +19,6 @@ int old_y;
 int64 old_timer;
 double diff;
 
-string storage_names_tracker[] = {
-    "boite_noire",
-    "boite_blanche",
-    "couvercle_noir",
-    "couvercle_blanc",
-    "goupille_noire",
-    "goupille_blanche"
-};
-
 int object_w = 150;
 int object_h = object_w;
 
@@ -36,23 +27,29 @@ bool one_take = false;
 double wait_time_trigger = 1; // second
 Rect rect;
 
-const char *classes[4] = { "Boite", "Couvercle", "Goupille", "Autre" };
+const char *classes[4] = { "boite", "couvercle", "goupille", "Autre" };
 
 int num_storage = 6; // 6 storage
 
 void trackAndRecognize(){
   
+  vector<string> regionsNames;
+  for(int i = 0; i < elements.size(); i++){
+    vector<string> s = elements[i];
+    string s1 = s[0] + "_RGB(" + s[1] + "," + s[2] + "," + s[3] + ")";
+    regionsNames.push_back(s1);
+  }
+
   Rect roi;
   Mat frame;
-
-  cout << vector_regions.size() << endl;
 
   // create a tracker object
   Ptr<Tracker> tracker = TrackerCSRT::create();
 
   // set input video
-  VideoCapture cam(0);
-  
+  VideoCapture cam(1);
+  cam.set(CAP_PROP_AUTOFOCUS, 0);
+    
   // We need to wait a little for the cam to start.
   cam >> frame; // skip 
   cam >> frame; // skip
@@ -70,9 +67,12 @@ void trackAndRecognize(){
   Mat images[6];
   for(int i = 0; i<6; i++)
   {
-    images[i] = imread("./mask_calibration_" + storage_names_tracker[i] + ".png", IMREAD_GRAYSCALE);
+    images[i] = imread("./mask_calibration_" + regionsNames[i] + ".png", IMREAD_GRAYSCALE);
   }
 
+  cout << elements.size() << endl;
+  
+  int64 triggerTime;
   for ( ;; ){
     cam >> frame;
 
@@ -81,6 +81,7 @@ void trackAndRecognize(){
 
     tracker->update(frame,roi);
 
+    // Fetch coordinates of the ROI
     int64 t = getTickCount();
     if(t - old_timer >= getTickFrequency()*wait_time_trigger && !triggered){
       diff = sqrt(abs(roi.x - old_x) + abs(roi.y - old_y));
@@ -96,14 +97,19 @@ void trackAndRecognize(){
       if(diff <= 3.0){
         triggered = true;
         rect = Rect(roi.x-(object_w-roi.width)*0.5, roi.y-(object_h-roi.height)*0.5, object_w, object_h);
+        triggerTime = getTickCount();
       }
 
     }
     
     rectangle(frame, roi, Scalar( 255, 10, 90 ), 2, 2 );
-    
-    if(triggered && !one_take){
-      one_take = true;
+
+    // No trigger zone
+    //rectangle(frame, Rect(Point(1, 1), Point(250, 250)), Scalar( 255, 255, 255 ), 1, 2);
+
+    if(old_x <= 100 && old_y <= 100){
+      triggered = false;
+    } else if(triggered && t - triggerTime >= getTickFrequency()*5) { // Wait 5 seconds if we need to trigger
       Range r1 = Range( old_y, old_y+object_h );
       if(r1.start <= 0) r1.start = 1;
       if(r1.end > frame.rows) r1.end = frame.rows;
@@ -134,7 +140,68 @@ void trackAndRecognize(){
       vector<int> color = getColor(extract);
       cout << "Object Color RGB(" << color[0] << "," << color[1] << "," << color[2] << ");" << endl;
       
+      bool isCorrect = false;
+      int index_region_inside = -1;
+
+      for(int i = 0; i < elements.size(); i++){
+        int rx = roi.x;
+        int ry = roi.y;
+        int expected_R = std::stoi(elements[i][1]);
+        int expected_G = std::stoi(elements[i][2]);
+        int expected_B = std::stoi(elements[i][3]);
+        
+        vector<vector<Point> > contours;
+        vector<Vec4i> hierarchy;
+        findContours(images[i], contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE);
+        vector<Point> cnt;
+        double len = arcLength(contours[0], true);
+        approxPolyDP(contours[0], cnt, 0.009 *len, true);
+        vector<vector<Point>> shapes = {cnt};
+        drawContours(frame, shapes, 0, Scalar(0, 0, 255), 2);
+        int res = pointPolygonTest(cnt, Point(rx, ry), false);
+
+        if(res == 1 || res == 0){ //If the point is inside 
+          cout << "res=" << res << " i=" << i << endl;
+          index_region_inside = i;
+          if(classes[maxElementIndex] != elements[i][0]){
+            continue;
+          }
+
+          if(color[0] != expected_R || color[1] != expected_G || color[2] != expected_B){
+            continue;
+          }
+
+          isCorrect = true;
+          break;  
+        
+        }else{
+          cout << "Object not in region "            \
+               << elements[i][0]                     \
+               << " - RGB(" << elements[i][1] << "," \
+               << elements[i][2] << ","              \
+               << elements[i][3] << ")"              \
+          << endl;
+        }
+
+      }
+
+      if(isCorrect) cout << "Correct shape and color. Good!" << endl;
+      else {
+        if(index_region_inside != -1) {
+          cout << "Something is wrong. Expected:"                      \
+               << elements[index_region_inside][0]                     \
+               << " - RGB(" << elements[index_region_inside][1] << "," \
+               << elements[index_region_inside][2] << ","              \
+               << elements[index_region_inside][3] << ")"              \
+          << endl;
+        }
+      }
+
+      triggered = false;      
     }
+
+    // if(!triggered && one_take && t - triggerTime >= getTickFrequency()*10) // Wait 5 seconds after the object recognition and then we can start all over again
+    //   one_take = false;
     
     rectangle(frame, rect, Scalar(255, 0, 0), 1);
     

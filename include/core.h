@@ -10,5 +10,14 @@ std::vector<int> getColor(cv::Mat frame1);
 namespace { std::vector<std::vector<cv::Point>> vector_regions; }
 extern std::vector<std::vector<cv::Point>> vector_regions;
 
+static std::vector<std::vector<std::string>> elements = {
+    {"boite", "0", "0", "0"},
+    {"boite", "255", "255", "255"},
+    {"couvercle", "0", "0", "0"},
+    {"couvercle", "255", "255", "255"},
+    {"goupille", "0", "0", "0"},
+    {"goupille", "255", "255", "255"}
+};
+
 #endif // HEADER_FILE_H 
 

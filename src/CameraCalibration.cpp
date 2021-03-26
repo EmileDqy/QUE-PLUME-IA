@@ -24,6 +24,8 @@ Mat canny;
 Mat frame_morphed;
 Mat pic;
 
+string regionName;
+
 // Our canny threshold, the one we modify with our trackbar.
 int lowThreshold = 30; //% ; 30 is a good value
 
@@ -33,15 +35,7 @@ int lowThreshold = 30; //% ; 30 is a good value
 vector<vector<Point>> regions_displayed;
 vector<vector<Point>> regions_saved;
 
-// The different names of our storages.
-string storage_names[] = {
-    "boite_noire",
-    "boite_blanche",
-    "couvercle_noir",
-    "couvercle_blanc",
-    "goupille_noire",
-    "goupille_blanche"
-};
+vector<string> regionsNames;
 
 // We use this fonction to strech the sprectrum of our image.
 // It helps for edge detection because is enhances the contrast.
@@ -61,7 +55,7 @@ void contrastStretch(Mat &srcImage){
 // Called when the mouse iteracts witht the window (highgui)
 void onMouse(int event, int x, int y, int flags, void* userdata){
     // If our event is a left click and we still have regions to select
-    if(event == EVENT_LBUTTONDOWN && regions_saved.size() < sizeof(storage_names)/sizeof(storage_names[0])){
+    if(event == EVENT_LBUTTONDOWN && regions_saved.size() < elements.size()){
         
         vector<vector<Point>> contour; // We initialize our contour vector
 
@@ -86,8 +80,11 @@ void onMouse(int event, int x, int y, int flags, void* userdata){
             }
         }
 
+        
         // If it's ok, we add the contour to our vector containing our saved regions (in red).
-        if(isInsideRegion == 1 && isInsideRegionSaved != 1) regions_saved.push_back(contour[0]);
+        if(isInsideRegion == 1 && isInsideRegionSaved != 1) {
+            regions_saved.push_back(contour[0]);
+        }
     }
 }
 
@@ -95,14 +92,24 @@ void calibrate()
 {
     string window_title = "Camera";
 
-    VideoCapture cam(0); // We initialize our cam and ask for the peripheral number 1 (only MacOS, 0 otherwise)
+    VideoCapture cam(1); // We initialize our cam and ask for the peripheral number 1 (only MacOS, 0 otherwise)
+    cam.set(CAP_PROP_AUTOFOCUS, 0);
+    
+    for(int i = 0; i < elements.size(); i++){
+        vector<string> s = elements[i];
+        string s1 = s[0] + "_RGB(" + s[1] + "," + s[2] + "," + s[3] + ")";
+        regionsNames.push_back(s1);
+    }
 
     for(;;){
         cam >> frame; // We fetch our image from the camera.
         
-        if(regions_saved.size() < sizeof(storage_names)/sizeof(storage_names[0]))
-            window_title = storage_names[regions_saved.size()]; // We display the name of the next region to be selected.
-        else
+        string regionName;
+        if(regions_saved.size() < elements.size()){
+            vector<string> s = elements[regions_saved.size()];
+            regionName = s[0] + "_RGB(" + s[1] + "," + s[2] + "," + s[3] + ")";
+            window_title = regionName; // We display the name of the next region to be selected.
+        } else
             break; // When we have selected the number of regions needed, we break the loop. We then display the result with the real image (frame).
         setWindowTitle("Camera", window_title);        
 
@@ -134,6 +141,7 @@ void calibrate()
             approxPolyDP(contours[i], cnt, 0.009 *len, true); // polygon approximation of the contour of index i
             if(cnt.size() == 4 && contourArea(cnt) > 200 && isContourConvex(cnt) ){ // quadrilateral detection
                 regions_displayed.push_back(cnt); // we add it to the regions to be displayed (in blue)
+                
             }
         }
         
@@ -143,7 +151,7 @@ void calibrate()
         drawContours(pic, regions_displayed, -1, Scalar(255, 0, 0), 3);
         drawContours(pic, regions_saved,     -1, Scalar(0, 0, 255), 5);
         for(int i = 0; i < regions_saved.size(); i++)
-            putText(pic, storage_names[i], Point(regions_saved[i][0].x-15, regions_saved[i][0].y-5), FONT_HERSHEY_PLAIN, 1, Scalar(0, 0, 255));
+            putText(pic, regionsNames[i], Point(regions_saved[i][0].x-15, regions_saved[i][0].y-5), FONT_HERSHEY_PLAIN, 1, Scalar(0, 0, 255));
         
         imshow("Camera", pic);
         if((waitKey(1) & 0xFF) == 'q') break; // From here, we can simply read our masks and get our regions and their names. 
@@ -154,15 +162,18 @@ void calibrate()
 
     Mat mask = Mat::ones(pic.size(), CV_8U);
     drawContours(mask, regions_saved, -1, Scalar(0, 0, 255), 5);
-    imwrite("./mask_calibration.png", mask*255); // After that, we fetch the image on the other side and apply approxPolyDP + 4 sides detection to get our
+    imwrite("./mask_calibration.png", mask); // After that, we fetch the image on the other side and apply approxPolyDP + 4 sides detection to get our
     // But we'll have trouble getting the names right there, so we might as well each region individualy with their corresponding name.
 
     // Here we just write the names because we need to display the camera with the mask on it.
+    
+    cout << "Region saved:" << regions_saved.size() << " - " << "Region names:" << regionsNames[0] << " " << regionsNames[1] << endl;
+    
     for(int i = 0; i < regions_saved.size(); i++) {
-        Mat mask_local = Mat::ones(pic.size(), CV_8U);
-        putText(mask, storage_names[i], Point(regions_saved[i][0].x-15, regions_saved[i][0].y-5), FONT_HERSHEY_PLAIN, 1, Scalar(0, 0, 255));
-        drawContours(mask_local, regions_saved, i, Scalar(0, 0, 255), 5);
-        imwrite("./mask_calibration_" + storage_names[i] + ".png", mask_local * 255);
+        Mat mask_local = Mat::zeros(pic.size(), CV_8U);
+        putText(mask, regionsNames[i], Point(regions_saved[i][0].x-15, regions_saved[i][0].y-5), FONT_HERSHEY_PLAIN, 1, Scalar(0, 0, 255));
+        drawContours(mask_local, regions_saved, i, Scalar(255), 2);
+        imwrite("./mask_calibration_" + regionsNames[i] + ".png", mask_local);
     }
     
     std::vector<std::vector<cv::Point>> vector_regions = regions_saved;
