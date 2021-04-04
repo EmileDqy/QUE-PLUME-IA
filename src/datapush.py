@@ -23,20 +23,20 @@ config = {
 if __name__ == "__main__":
   #argparser
   my_parser = argparse.ArgumentParser(description='Push data to firebase')
-
   my_parser.add_argument('type_expected',
                         help='type expected of the object')
   my_parser.add_argument('color_expected',
                         help='color expected of the object')
   my_parser.add_argument('type_found',
-                        help='type of the object found')
+                        help='type estimated for the object')
   my_parser.add_argument('color_found',
-                        help='color of the object found')
+                        help='color estimated for the object')
 
   # Setup firebase
   firebase = pyrebase.initialize_app(config)
   db = firebase.database()
   
+  # Vars
   dateheure = str(datetime.datetime.now())
 
   # Execute parse_args()
