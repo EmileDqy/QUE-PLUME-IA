@@ -92,7 +92,7 @@ void calibrate()
 {
     string window_title = "Camera";
 
-    VideoCapture cam(1); // We initialize our cam and ask for the peripheral number 1 (only MacOS, 0 otherwise)
+    VideoCapture cam(0);
     cam.set(CAP_PROP_AUTOFOCUS, 0);
     
     for(int i = 0; i < elements.size(); i++){

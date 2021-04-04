@@ -47,7 +47,7 @@ void trackAndRecognize(){
   Ptr<Tracker> tracker = TrackerCSRT::create();
 
   // set input video
-  VideoCapture cam(1);
+  VideoCapture cam(0);
   cam.set(CAP_PROP_AUTOFOCUS, 0);
     
   // We need to wait a little for the cam to start.
@@ -126,7 +126,7 @@ void trackAndRecognize(){
       );
       
       resize(extract, extract, Size(224, 224));
-      dnn::Net net = dnn::readNetFromTensorflow("/Users/emile/Documents/HEI4/AI/QUE-PLUME-IA/src/frozen_graph.pb");//, "./frozen_graph.pbtxt");
+      dnn::Net net = dnn::readNetFromTensorflow("/home/pi/QUE-PLUME-IA/src/frozen_graph.pb");//, "./frozen_graph.pbtxt");
       net.setInput(dnn::blobFromImage(extract, (1.0), Size(224, 224)));
       Mat output = net.forward();
       vector<float> v;
@@ -140,6 +140,7 @@ void trackAndRecognize(){
       vector<int> color = getColor(extract);
       cout << "Object Color RGB(" << color[0] << "," << color[1] << "," << color[2] << ");" << endl;
       
+      // Crash after this line
       bool isCorrect = false;
       int index_region_inside = -1;
 
@@ -153,56 +154,65 @@ void trackAndRecognize(){
         vector<vector<Point> > contours;
         vector<Vec4i> hierarchy;
         findContours(images[i], contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE);
-        vector<Point> cnt;
-        double len = arcLength(contours[0], true);
-        approxPolyDP(contours[0], cnt, 0.009 *len, true);
-        vector<vector<Point>> shapes = {cnt};
-        drawContours(frame, shapes, 0, Scalar(0, 0, 255), 2);
-        int res = pointPolygonTest(cnt, Point(rx, ry), false);
-
-        if(res == 1 || res == 0){ //If the point is inside 
-          cout << "res=" << res << " i=" << i << endl;
-          index_region_inside = i;
-          if(classes[maxElementIndex] != elements[i][0]){
-            continue;
-          }
-
-          if(color[0] != expected_R || color[1] != expected_G || color[2] != expected_B){
-            continue;
-          }
-
-          isCorrect = true;
-          break;  
         
-        }else{
-          cout << "Object not in region "            \
-               << elements[i][0]                     \
-               << " - RGB(" << elements[i][1] << "," \
-               << elements[i][2] << ","              \
-               << elements[i][3] << ")"              \
-          << endl;
-        }
+        vector<Point> cnt;
+        if(contours.size() > 0){
 
+          double len = arcLength(contours[0], true);
+          approxPolyDP(contours[0], cnt, 0.009 *len, true);
+        
+          vector<vector<Point>> shapes = {cnt};
+          drawContours(frame, shapes, 0, Scalar(0, 0, 255), 2);
+        
+          int res = pointPolygonTest(cnt, Point(rx, ry), false);
+
+          if(res == 1 || res == 0){ //If the point is inside 
+            cout << "res=" << res << " i=" << i << endl;
+            index_region_inside = i;
+            if(classes[maxElementIndex] != elements[i][0]){
+              continue;
+            }
+
+            if(color[0] != expected_R || color[1] != expected_G || color[2] != expected_B){
+              continue;
+            }
+
+            isCorrect = true;
+            break;  
+          
+          }else{
+            cout << "Object not in region "            \
+                << elements[i][0]                     \
+                << " - RGB(" << elements[i][1] << "," \
+                << elements[i][2] << ","              \
+                << elements[i][3] << ")"              \
+            << endl;
+          }
+
+        }else{
+          cout << "Error: Couldn't find any shape for given region: " \
+                << elements[i][0]                     \
+                << " - RGB(" << elements[i][1] << "," \
+                << elements[i][2] << ","              \
+                << elements[i][3] << ")"              \
+                << endl;
+        }
       }
 
       if(isCorrect) cout << "Correct shape and color. Good!" << endl;
       else {
         if(index_region_inside != -1) {
           cout << "Something is wrong. Expected:"                      \
-               << elements[index_region_inside][0]                     \
-               << " - RGB(" << elements[index_region_inside][1] << "," \
-               << elements[index_region_inside][2] << ","              \
-               << elements[index_region_inside][3] << ")"              \
+              << elements[index_region_inside][0]                     \
+              << " - RGB(" << elements[index_region_inside][1] << "," \
+              << elements[index_region_inside][2] << ","              \
+              << elements[index_region_inside][3] << ")"              \
           << endl;
         }
       }
-
       triggered = false;      
     }
 
-    // if(!triggered && one_take && t - triggerTime >= getTickFrequency()*10) // Wait 5 seconds after the object recognition and then we can start all over again
-    //   one_take = false;
-    
     rectangle(frame, rect, Scalar(255, 0, 0), 1);
     
     imshow("Camera",frame);
