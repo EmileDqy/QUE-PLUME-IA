@@ -126,7 +126,7 @@ void trackAndRecognize(){
       );
       
       resize(extract, extract, Size(224, 224));
-      dnn::Net net = dnn::readNetFromTensorflow("/home/pi/QUE-PLUME-IA/src/frozen_graph.pb");//, "./frozen_graph.pbtxt");
+      dnn::Net net = dnn::readNetFromTensorflow("./frozen_graph.pb");//, "./frozen_graph.pbtxt");
       net.setInput(dnn::blobFromImage(extract, (1.0), Size(224, 224)));
       Mat output = net.forward();
       vector<float> v;

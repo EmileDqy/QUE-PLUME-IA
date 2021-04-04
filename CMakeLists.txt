@@ -17,6 +17,10 @@ link_directories(/usr/local/lib)
 add_executable(ProjetIA ${SOURCES})
 target_link_libraries( ProjetIA ${OpenCV_LIBS} )
 
+# Copy
+configure_file("./src/frozen_graph.pb" "./frozen_graph.pb" COPYONLY)
+configure_file("./src/datapush.py" "./datapush.py" COPYONLY)
+
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
