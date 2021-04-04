@@ -4,6 +4,11 @@ Created on Fri Mar 26 15:03:21 2021
 @author: Lucie
 """
 
+import os
+try:
+  import pyrebase
+except ImportError:
+  os.system('python3 -m pip install pyrebase')
 import pyrebase
 import argparse
 import datetime
@@ -15,14 +20,18 @@ config = {
   "storageBucket": "projetia-d96bc.appspot.com"
 }
 
-if __main__ == "__name__":
+if __name__ == "__main__":
   #argparser
   my_parser = argparse.ArgumentParser(description='Push data to firebase')
 
-  my_parser.add_argument('type',
-                        help='type of the object')
-  my_parser.add_argument('color',
-                        help='color of the object')
+  my_parser.add_argument('type_expected',
+                        help='type expected of the object')
+  my_parser.add_argument('color_expected',
+                        help='color expected of the object')
+  my_parser.add_argument('type_found',
+                        help='type of the object found')
+  my_parser.add_argument('color_found',
+                        help='color of the object found')
 
   # Setup firebase
   firebase = pyrebase.initialize_app(config)
@@ -32,7 +41,7 @@ if __main__ == "__name__":
 
   # Execute parse_args()
   args = my_parser.parse_args()
-  data = {"type_reel":args.type,"couleur_reelle":args.color,"date":dateheure,"couleur_trouvee" :"noire","id":"1","type_trouve" :"couvercle"}
+  data = {"type_reel":args.type_expected,"couleur_reelle":args.color_expected,"date":dateheure,"couleur_trouvee" : args.color_found,"id":"1","type_trouve" :args.type_found}
   db.child("erreurs").push(data)
   print('The data has been pushed')
 
