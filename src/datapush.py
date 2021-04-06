@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
   # Execute parse_args()
   args = my_parser.parse_args()
-  data = {"type_reel":args.type_expected,"couleur_reelle":args.color_expected,"date":dateheure,"couleur_trouvee" : args.color_found,"id":"1","type_trouve" :args.type_found}
+  data = {"type_reel":args.type_expected,"couleur_reelle":args.color_expected,"date":dateheure,"couleur_trouvee" : args.color_found,"type_trouve" :args.type_found}
   db.child("erreurs").push(data)
   print('The data has been pushed')
 
