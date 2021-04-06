@@ -1,9 +1,9 @@
+# -*- coding: utf-8 -*-
 """
-Created on Fri Mar 26 15:03:21 2021
+Created on Tue Apr  6 11:16:40 2021
 
 @author: Lucie
 """
-
 import os
 try:
   import pyrebase
@@ -41,10 +41,35 @@ if __name__ == "__main__":
 
   # Execute parse_args()
   args = my_parser.parse_args()
-  data = {"type_reel":args.type_expected,"couleur_reelle":args.color_expected,"date":dateheure,"couleur_trouvee" : args.color_found,"id":"1","type_trouve" :args.type_found}
-  db.child("erreurs").push(data)
+  data = {"type_reel":args.type_expected,"couleur_reelle":args.color_expected,"date":dateheure,"couleur_trouvee" : args.color_found,"type_trouve" :args.type_found}
+  db.child("traites").push(data)
+  type_reel = data["type_reel"]
+  couleur_reelle = data["couleur_reelle"]
+  type_trouve = data["type_trouve"]
+  couleur_trouvee = data["couleur_trouvee"]
+  if (type_reel == type_trouve and couleur_reelle == couleur_trouvee) :
+      if (type_reel == "couvercle" or couleur_reelle == "rouge") :
+          bon = db.child("resultat").child("true_" + type_reel + "_" + couleur_reelle).get().val()
+          db.child("resultat").update({"true_" + type_reel + "_" + couleur_reelle : bon+1})
+      else :
+        if couleur_reelle == "blanc" :
+            bon = db.child("resultat").child("true_" + type_reel + "_" + couleur_reelle + "he").get().val()
+            db.child("resultat").update({"true_" + type_reel + "_" + couleur_reelle + "he": bon+1})
+        else :
+                bon = db.child("resultat").child("true_" + type_reel + "_" + couleur_reelle + "e").get().val()
+                db.child("resultat").update({"true_" + type_reel + "_" + couleur_reelle + "e": bon+1})
+  else :
+        if (type_reel == "couvercle" or couleur_reelle =="rouge") :
+            faux = db.child("resultat").child("false_" + type_reel + "_" + couleur_reelle).get().val()
+            db.child("resultat").update({"false_" + type_reel + "_" + couleur_reelle : faux+1})
+        else :
+            if couleur_reelle == "blanc" :
+                faux = db.child("resultat").child("false_" + type_reel + "_" + couleur_reelle + "he").get().val()
+                db.child("resultat").update({"false_" + type_reel + "_" + couleur_reelle + "he" : faux+1})
+            else :
+                faux = db.child("resultat").child("false_" + type_reel + "_" + couleur_reelle + "e").get().val()
+                db.child("resultat").update({"false_" + type_reel + "_" + couleur_reelle + "e" : faux+1})
   print('The data has been pushed')
-
 
 
 
