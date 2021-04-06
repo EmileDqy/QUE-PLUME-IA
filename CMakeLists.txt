@@ -7,6 +7,8 @@ enable_testing()
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 find_package(OpenCV)
 
+find_library(wiringPi_LIB wiringPi)
+
 message(STATUS "OpenCV_INCLUDE_DIRS = ${OpenCV_INCLUDE_DIRS}")
 message(STATUS "OpenCV_LIBS = ${OpenCV_LIBS}")
 
@@ -15,7 +17,7 @@ file(GLOB SOURCES "src/*.cpp")
 
 link_directories(/usr/local/lib)
 add_executable(ProjetIA ${SOURCES})
-target_link_libraries( ProjetIA ${OpenCV_LIBS} )
+target_link_libraries( ProjetIA ${OpenCV_LIBS} ${wiringPi_LIB} )
 
 # Copy
 configure_file("./src/frozen_graph.pb" "./frozen_graph.pb" COPYONLY)

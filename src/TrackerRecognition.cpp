@@ -1,6 +1,9 @@
 #include <iostream>
 #include <cstring>
 #include <cstdlib>
+#include <memory>
+#include <stdexcept>
+#include <array>
 
 #include "core.h"
 
@@ -10,6 +13,10 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/dnn.hpp>
 
+#include <wiringPi.h>
+
+#define RED_LED 0
+#define GREEN_LED 2
 
 using namespace std;
 using namespace cv;
@@ -31,8 +38,22 @@ const char *classes[4] = { "boite", "couvercle", "goupille", "Autre" };
 
 int num_storage = 6; // 6 storage
 
+void exec(const char* cmd) {
+    array<char, 128> buffer;
+    string result;
+    unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+    if (!pipe) {
+        throw runtime_error("popen() failed!");
+    }
+}
+
+
 void trackAndRecognize(){
   
+  wiringPiSetup();
+  pinMode(RED_LED, OUTPUT) ; // GPIO 17 -> Rouge
+  pinMode(GREEN_LED, OUTPUT) ; // GPIO 27 -> Vert
+
   vector<string> regionsNames;
   for(int i = 0; i < elements.size(); i++){
     vector<string> s = elements[i];
@@ -178,7 +199,7 @@ void trackAndRecognize(){
             }
 
             isCorrect = true;
-            break;  
+            break;
           
           }else{
             cout << "Object not in region "            \
@@ -199,8 +220,13 @@ void trackAndRecognize(){
         }
       }
 
-      if(isCorrect) cout << "Correct shape and color. Good!" << endl;
-      else {
+      if(isCorrect) {
+        cout << "Correct shape and color. Good!" << endl;
+        digitalWrite(RED_LED, LOW);
+        digitalWrite(GREEN_LED, HIGH);
+      } else {
+        digitalWrite(GREEN_LED, LOW);
+        digitalWrite(RED_LED, HIGH);
         if(index_region_inside != -1) {
           cout << "Something is wrong. Expected:"                      \
               << elements[index_region_inside][0]                     \
@@ -210,7 +236,22 @@ void trackAndRecognize(){
           << endl;
         }
       }
-      triggered = false;      
+      triggered = false;
+
+      
+        std::ostringstream cmd;
+        cmd << "/usr/bin/python3 ./datapush.py '";
+        
+        cmd << elements[index_region_inside][0] << "' "; // type_expected
+        cmd << "'RGB(" << elements[index_region_inside][1] << "," \
+            << elements[index_region_inside][2] << ","              \
+            << elements[index_region_inside][3] << ")' '"; // color_expected
+        
+        cmd << classes[maxElementIndex] << "' "; // type_found
+        cmd << "'RGB(" << color[0] << "," << color[1] << "," << color[2] << ")'"; // color_found
+        
+        cout << cmd.str() << " <<" << endl; 
+        exec(cmd.str().c_str());
     }
 
     rectangle(frame, rect, Scalar(255, 0, 0), 1);
