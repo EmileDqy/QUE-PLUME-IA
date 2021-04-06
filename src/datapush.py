@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Tue Apr  6 11:16:40 2021
-
 @author: Lucie
 """
 import os
@@ -55,29 +54,14 @@ if __name__ == "__main__":
   db.child("traites").push(data)
 
   if (type_reel == type_trouve and couleur_reelle == couleur_trouvee) :
-      if (type_reel == "couvercle" or couleur_reelle == "rouge") :
-          bon = db.child("resultat").child("true_" + type_reel + "_" + couleur_reelle).get().val()
-          db.child("resultat").update({"true_" + type_reel + "_" + couleur_reelle : bon+1})
-      else :
-        if couleur_reelle == "blanc" :
-            bon = db.child("resultat").child("true_" + type_reel + "_" + couleur_reelle + "he").get().val()
-            db.child("resultat").update({"true_" + type_reel + "_" + couleur_reelle + "he": bon+1})
-        else :
-                bon = db.child("resultat").child("true_" + type_reel + "_" + couleur_reelle + "e").get().val()
-                db.child("resultat").update({"true_" + type_reel + "_" + couleur_reelle + "e": bon+1})
-  else :
-        if (type_reel == "couvercle" or couleur_reelle =="rouge") :
-            faux = db.child("resultat").child("false_" + type_reel + "_" + couleur_reelle).get().val()
-            db.child("resultat").update({"false_" + type_reel + "_" + couleur_reelle : faux+1})
-        else :
-            if couleur_reelle == "blanc" :
-                faux = db.child("resultat").child("false_" + type_reel + "_" + couleur_reelle + "he").get().val()
-                db.child("resultat").update({"false_" + type_reel + "_" + couleur_reelle + "he" : faux+1})
-            else :
-                faux = db.child("resultat").child("false_" + type_reel + "_" + couleur_reelle + "e").get().val()
-                db.child("resultat").update({"false_" + type_reel + "_" + couleur_reelle + "e" : faux+1})
-  print('The data has been pushed')
+      bon = db.child("resultat").child("true_" + type_reel + "_" + couleur_reelle).get().val()
+      db.child("resultat").update({"true_" + type_reel + "_" + couleur_reelle : bon+1})
 
+  else :
+      faux = db.child("resultat").child("false_" + type_reel + "_" + couleur_reelle).get().val()
+      db.child("resultat").update({"false_" + type_reel + "_" + couleur_reelle : faux+1})
+
+  print('The data has been pushed')
 
 
 
