@@ -19,7 +19,7 @@ vector<int> noir    = {0  ,   0,   0};
 vector<int> rouge   = {255,   0,   0};
 vector<int> gris    = {127, 127, 127};
 vector<int> fond    = {255, 255, 255};
-vector<vector<int>> colors = {noir, blanc, rouge, blanc, fond};
+vector<vector<int>> colors = {noir, blanc, rouge, fond };
 
 std::vector<int> getColor(Mat frame1)
 {
@@ -36,10 +36,10 @@ std::vector<int> getColor(Mat frame1)
 
     int clusterCount = 2; //On veut 2 couleurs
     Mat labels;
-    int attempts = 3;
+    int attempts = 1;
     Mat centers;
     // kmeans pour trouver le centre de nos clusters
-    kmeans(samples, clusterCount, labels, TermCriteria(TermCriteria::MAX_ITER+TermCriteria::EPS, 5, 0.01), attempts, KMEANS_PP_CENTERS, centers );
+    kmeans(samples, clusterCount, labels, TermCriteria(TermCriteria::MAX_ITER+TermCriteria::EPS, 1, 0.11), attempts, KMEANS_PP_CENTERS, centers );
 
     cout << "Two centroids were detected:" << endl;
     cout << centers << endl;

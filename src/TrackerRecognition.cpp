@@ -26,15 +26,15 @@ int old_y;
 int64 old_timer;
 double diff;
 
-int object_w = 150;
-int object_h = object_w;
+int object_w = 180;
+int object_h = 180;
 
 bool triggered = false;
 bool one_take = false;
 double wait_time_trigger = 1; // second
 Rect rect;
 
-const char *classes[4] = { "boite", "couvercle", "goupille", "Autre" };
+const char *classes[4] = { "goupille", "couvercle", "boite", "Autre" };
 
 int num_storage = 6; // 6 storage
 
@@ -123,7 +123,6 @@ void trackAndRecognize(){
 
     }
     
-    rectangle(frame, roi, Scalar( 255, 10, 90 ), 2, 2 );
 
     // No trigger zone
     //rectangle(frame, Rect(Point(1, 1), Point(250, 250)), Scalar( 255, 255, 255 ), 1, 2);
@@ -140,16 +139,23 @@ void trackAndRecognize(){
       
       cout << r1 << " " << r2 << endl;
 
+      // 
+      // old_x-object_w*0.5, old_x+object_w*0.5
       cv::Mat extract(
         frame,                              // Frame to copy
-        cv::Range( old_y, old_y+object_h ), // Range along Y axis
-        cv::Range( old_x-object_w, old_x )  // Range along X axis
+        Range( rect.y, rect.y + rect.height),
+        Range( rect.x, rect.x + rect.width)
       );
       
-      resize(extract, extract, Size(224, 224));
-      dnn::Net net = dnn::readNetFromTensorflow("./frozen_graph.pb");//, "./frozen_graph.pbtxt");
-      net.setInput(dnn::blobFromImage(extract, (1.0), Size(224, 224)));
+      imwrite("input_AI.png", extract);
+
+      dnn::Net net = dnn::readNetFromTensorflow("./frozen_graph_v12.pb", "./frozen_graph_v12.pbtxt");
+      //resize(extract, extract, Size(224, 224));
+      Mat blob;
+      dnn::blobFromImage(extract, blob, (1.0), Size(224, 224), Scalar(0), true, true);      
+      net.setInput(blob);
       Mat output = net.forward();
+      
       vector<float> v;
       output.row(0).copyTo(v);
       int maxElementIndex = std::max_element(v.begin(),v.end()) - v.begin();
@@ -238,21 +244,24 @@ void trackAndRecognize(){
       }
       triggered = false;
 
-      
+      if(index_region_inside != -1) { 
+        cout << elements[index_region_inside][0] << endl;
+        
         std::ostringstream cmd;
         cmd << "/usr/bin/python3 ./datapush.py '";
-        
         cmd << elements[index_region_inside][0] << "' "; // type_expected
-        cmd << "'RGB(" << elements[index_region_inside][1] << "," \
-            << elements[index_region_inside][2] << ","              \
-            << elements[index_region_inside][3] << ")' '"; // color_expected
-        
+        cmd << "'RGB(" << elements[index_region_inside][1] << ",";
+        cmd << elements[index_region_inside][2] << ",";              
+        cmd << elements[index_region_inside][3] << ")' '"; // color_expected
         cmd << classes[maxElementIndex] << "' "; // type_found
         cmd << "'RGB(" << color[0] << "," << color[1] << "," << color[2] << ")'"; // color_found
-        
+
         cout << cmd.str() << " <<" << endl; 
         exec(cmd.str().c_str());
+      }
     }
+
+    rectangle(frame, roi, Scalar( 255, 10, 90 ), 2, 2 );
 
     rectangle(frame, rect, Scalar(255, 0, 0), 1);
     
