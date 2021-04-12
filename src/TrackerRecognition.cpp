@@ -26,8 +26,8 @@ int old_y;
 int64 old_timer;
 double diff;
 
-int object_w = 180;
-int object_h = 180;
+int object_w = 80;
+int object_h = 80;
 
 bool triggered = false;
 bool one_take = false;
@@ -147,12 +147,12 @@ void trackAndRecognize(){
         Range( rect.x, rect.x + rect.width)
       );
       
-      imwrite("input_AI.png", extract);
 
       dnn::Net net = dnn::readNetFromTensorflow("./frozen_graph_v12.pb", "./frozen_graph_v12.pbtxt");
-      //resize(extract, extract, Size(224, 224));
+      resize(extract, extract, Size(224, 224));
+      imwrite("input_AI.png", extract);
       Mat blob;
-      dnn::blobFromImage(extract, blob, (1.0), Size(224, 224), Scalar(0), true, true);      
+      dnn::blobFromImage(extract, blob, (1.0/255), Size(224, 224), Scalar(0), true, true);      
       net.setInput(blob);
       Mat output = net.forward();
       

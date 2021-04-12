@@ -15,7 +15,7 @@ static std::vector<std::vector<std::string>> elements = {
     {"boite", "255", "255", "255"},
     {"couvercle", "0", "0", "0"},
     {"couvercle", "255", "255", "255"},
-    {"goupille", "0", "0", "0"},
+    {"goupille", "255", "0", "0"},
     {"goupille", "255", "255", "255"}
 };
 
